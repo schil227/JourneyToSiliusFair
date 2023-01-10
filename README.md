@@ -14,12 +14,11 @@ This README contains a lot of design and technical details. This is largely for 
     1. [On "Fixing" the game](#fixing)
     1. [Why It's So Hard](#problem)
     1. [How To Fix The Frustration](#design_solution)
-    1. [The Item Drop System](#old_ids)
-    1. [The Result](#design_result)
+    1. [The Existing Item Drop System](#old_ids)
 1. [How It Was Changed](#how)
-    1. [Introduction](#how_intro)
+    1. [Where To Begin](#how_intro)
     1. [Tools](#tools)
-    1. [Debugging: Modern Day Detective Work](#debugging)
+    1. [Detective Work And Debugging](#debugging)
     1. [The Item Drop System](#tech_ids)
     1. [The Solution](#tech_solution)
     1. [The New Item Drop System](#new_ids)
@@ -123,37 +122,35 @@ The original Item Drop System (IDS) in the base game is pretty wack. Going into 
 
 From what I could deduce, the original IDS uses a scoring system. This system updates the score when an enemy is destroyed, and if certain conditions are met, it will either drop a HP or WE item. These conditions dictate that *multiple* enemies must be destroyed in order to have the chance of getting an item drop, and if there is an item drop, the player is twice as likely to get a WE drop over a HP drop. And, since the score aggressively resets to zero, there are only so many chances in the game where this is possible. The result is a very low drop chance, which does not match the challenges the player is against. I go into more detail in the technical section of this document outlining how the IDS works [here](#tech_ids).
 
-The patch cuts down the complexity of the IDS significantly, (mostly) ignoring the scoring mechanism in favor of random chance. After destroying a (standard) enemy, there is an equal 15% chance for either a WE drop or a HP drop. For more technical information about this new implementation, please visit this [dalmatian plantation](#new_ids). 
+The patch cuts down the complexity of the IDS significantly, (mostly) ignoring the scoring mechanism in favor of random chance. After destroying a (standard) enemy, there is an equal 12.5% chance for either a WE drop or a HP drop. For more technical information about this new implementation, please visit this [dalmatian plantation](#new_ids). 
 
-**tl;dr**: The original item drop system used some sort of (obtuse) scoring mechanism and was unbalanced. The one introduced by the patch has a flat 15% drop chance for both HP and WE.
+**tl;dr**: The original item drop system used some sort of (obtuse) scoring mechanism and was unbalanced. The one introduced by the patch has a flat 12.5% drop chance for both HP and WE.
 
 ## **How It Was Changed** <a id="how"></a>
- This is more of an educational section, detailing how I (a novice) was able to use tools to debug and make changes to the 6502 assembly code. Please note that much of this section will be technical, diving into the gory details of RAM values and Assembly. However, I only know so much about this stuff anyway, so hopefully my writing is clear enough for you to follow along as well.
+ This is the technical section detailing how I (a novice) was able to use tools to debug the NES ROM and make changes to the 6502 assembly code. It will go into the gory details of RAM values and Assembly. 
 
-**tl;dr** This section will go over the detective work and technical changes of making the patch.
-
-### **Introduction** <a id="how_intro"></a>
-Modifying the code of a video game may seem like an impossible task; however with some general programming know-how it's actually not too terribly difficult. A the assembly code of an NES game can be viewed using several tools, and altered using a simple hex editor. Before this project, I've had almost no experience with the Assembly language; however a general knowledge of software design appears to be more valuable (especially when the change you plan on making is relatively slight).
+### **Where To Begin** <a id="how_intro"></a>
+Modifying the code of a video game may seem like an impossible task; however with some general programming knowledge it's actually not too terribly difficult. The assembly code of an NES game can be viewed using several tools, and altered using a simple hex editor. Before this project, I had almost no experience with the Assembly language, but with google at my side that fortunately wasn't much of a barrier.
 
 75% of the work involved with this patch was watching RAM values change in the debugger and figuring out what the code was doing. About 15% of it consisted of actually coding in assembly, and the last 10% was testing it out.
 
-**tl;dr**: With mediocre skills, I was able to make a patch.
+**tl;dr**: With mediocre skills, I was able to make the patch.
 <br><br>
 
 ### **Tools** <a id="tools"></a>
 Using a Windows PC, I required three tools to make this patch:
-* [FCEUX](https://fceux.com/web/home.html) (v2.6.4) - An NES emulator tool which can debug NES games, setting break points in the code, view the RAM, etc.
+* [FCEUX](https://fceux.com/web/home.html) (v2.6.4) - An NES emulator which can be used to debug NES games, set break points in the code, view the RAM, etc.
 * [HxD](https://mh-nexus.de/en/hxd/) - A tool for editing the hex values of the .NES files
 * [Lunar IPS](https://www.romhacking.net/utilities/240/) - A tool for creating/applying patches to .NES files
 
 And of course, the unsung hero, [Notepad++](https://notepad-plus-plus.org/) for taking notes and writing out the draft assembly code.
 
-I should point out that I am fairly new to these tools; perhaps FCEUX lets you modify the .NES files as well, but I was able to get by with these tools.
+I should point out that I am fairly new to these tools, and I don't know all of their features. But with these tools, I was able to do all the work necessary to create the patch.
 
 **tl;dr** I used three, maybe four tools tops.
 <br>
 
-### **Debugging: Modern Day Detective Work** <a id="debugging"></a>
+### **Detective Work And Debugging** <a id="debugging"></a>
 Fair warning, this section is mostly just a retelling of my notes in a not terribly interesting way. But, for like six of you out there, it may be interesting (especially if you're curious about how I worked my way to a solution starting from nothing).
 
 As mentioned, most of the time developing this patch was spent figuring out where the code was that I wanted to modify, and how to integrate my desired change. This involved a lot of sleuthing in the code and ram.
@@ -164,41 +161,41 @@ As mentioned, most of the time developing this patch was spent figuring out wher
   This is pretty much what my screen looked like the entire time.
 </p>
 
-The above animation demonstrates the FCEUX tool. The top left window is (obviously) the game. The bottom left window displays the current values in RAM, the colors are a heat-map indicating how recently they were changed. The large right-hand window is the assembly code of the game. The emulation can be triggered to pause when certain conditions are met; these are called breakpoints. For example, a breakpoint can be triggered if a read or write is done on a particular address in RAM, or if a certain line of code is executed.
+The above animation demonstrates the FCEUX tool. The top left window is (obviously) the game. The bottom left window displays the current values in RAM (the colors are a heat-map, indicating how recently the values were changed). The large right-hand window is the assembly code of the game. The emulation can be triggered to pause when certain conditions are met; these are called breakpoints. For example, a breakpoint can be triggered if a read or write is done on a particular address in RAM, or if a certain line of code is executed.
 
-I knew that the code I wanted to alter had to be called when an enemy was destroyed, because destroying an enemy is a pre-condition to spawning an item. Therefore, I began looking for values in RAM that changed when an enemy shows up on screen. At first this may appear daunting, as there are over 65 thousand (0xFFFF) bytes of memory to look through, however with a few quick save states, much of it can be ruled out. For example, memory which updates all the time likely doesn't have anything to do with an enemy's metadata, so large swaths of data can be ruled out.
+I knew that the code I wanted to alter had to be called when an enemy was destroyed, because destroying an enemy is a pre-condition to spawning an item. Therefore, I began looking for values in RAM that changed when an enemy shows up on screen. At first this may appear daunting, as there are over 65 thousand (`0xFFFF`) bytes of memory to look through, however with a few quick save states, much of it can be ruled out. For example, memory which updates all the time likely doesn't have anything to do with an enemy's metadata, so large swaths of data can be ruled out.
 
 Eventually I came to the 0x0400 block of memory, which lit up when the first enemy jumped onto screen. Honing in on this, I started to play with the values in RAM while the game was running, and I was able to deduce some things:
-* 0x0402 had something to do with applying gravity to the enemy
-* 0x0403 moved the enemy vertically
-* 0x0404 moved the enemy horizontally
-* 0x040A was the timer used by the enemy (For example, setting this to 0xFF for the jumping enemy made them stand still for a long time)
+* `$0x0402` had something to do with applying gravity to the enemy
+* `$0x0403` moved the enemy vertically
+* `$0x0404` moved the enemy horizontally
+* `$0x040A` was the timer used by the enemy (For example, setting this to 0xFF for the jumping enemy made them stand still for a long time)
 
-Eventually, I came to 0x0408; this was a special value: it determined what the enemy *was*. For example, the first enemy you see in the game has a value of 0x09. Changing this value changes what that object is - it doesn't even have to be an enemy. After playing with this for a while, I discovered that changing this value to 0x54 turned the enemy into a health restoration item! This was big, as it allowed me to get near to the code which is handling the item drops.
+Eventually, I came to `$0x0408`; this was a special value: it determined what the enemy *was*. For example, the first enemy you see in the game has a value of `#0x09`. Changing this value changes what that object is (including non-enemy objects). After playing with this for a while, I discovered that changing this value to `#0x54` turned the enemy into a health restoration item! This was big, since knowing the id gave me a clue what to look for in the code.
 
-The next step was to set a breakpoint which basically said "If something attempts to write to 0x0408 with a value of 0x54, pause the emulation and point to the line". Then I simply played the game until I got a health drop. After a *long* while, the breakpoint was triggered. It wasn't quite what I was looking for, but still it was insightful. The register 0x18 (a.k.a. 0x0018) wrote the value to 0x0408. If you found yourself asking "Well, what if there's more than one enemy?" this is the answer: the game processes enemies one at a time, and it does that by loading the enemies data (0x04XX) into the "local" registers (0x00XX) and processes what to do with the enemy (or object, I guess). Then once it's finished, it writes back the registers (0x00XX) to the applicable location in RAM (0x040XX).
+The next step was to set a breakpoint which basically said "If something attempts to write to `$0x0408` with a value of `#0x54`, pause the emulation and point to the line". Then I simply played the game until I got a health drop. After a *long* while, the breakpoint was triggered. It wasn't quite what I was looking for, but it was still insightful. The address `$0x18` (a.k.a. `$0x0018`) wrote the value `#0x54` to `$0x0408`. If you found yourself asking "Well, what if there's more than one enemy?" this is the answer: the game processes enemies one at a time, and it does that by loading the enemies data (`$0x04XX`) into the "local" address (`$0x00XX`) and processes what to do with the enemy (or object, I guess). Then once it's finished, it writes back the address (`$0x00XX`) to the applicable location in RAM (`$0x040XX`).
 
-So, the next step was more or less the same as the previous; except instead of looking for writes to 0x0408, I was looking for writes to 0x18 with values of 0x54. This time, I struck gold:
+So, the next step was more or less the same as the previous; except instead of looking for writes to `$0x0408`, I was looking for writes to `$0x18` with values of `#0x54`. This time, I struck gold:
 
 <p align="center">
   <img src="health_drop_subroutine.png" alt="The health drop subroutine"/>
 </p>
 
-This is the health drop subroutine. To decypher the first two lines:
- * `LDA #$54` means load the number 0x54 (the id of a health item) into the accumulator (a register)
- * `STA $18` means store the current value of the accumulator (0x54) into the RAM address 0x18
+This is the health drop subroutine. To decipher the first two lines:
+ * `LDA #$54`: Load the number `#0x54` (the id of a health item) into the accumulator (a register)
+ * `STA $18`: Store the current value of the accumulator (`#0x54`) into the RAM address `$0x18`
 
- Which then gets propagated to an object on screen (e.g. 0x0408). 
+ Which then gets propagated to an object on screen (e.g. `$0x0408`). 
 
-This is great, but it's also not exactly what I wanted. I wanted the function which was calling this, because it was presumably in charge of deciding when a health restoration item was dropped. This part had me stumped for a while, as I was unable to search the assembly code within FCEUX (either because I'm inept or the feature just doesn't exist). But after doing some reading up on assembly, I was able to search the raw hex file for where it was being called.
+This is great, but it's also not *exactly* what I was looking for. I wanted the function which was calling this, because it is presumably in charge of deciding when a health restoration item was dropped. This part had me stumped for a while, as I was unable to search the assembly code within FCEUX (either because I'm inept or the feature just doesn't exist). But after doing some reading up on assembly, I was able to search the raw hex file for where it was being called.
 
 <p align="center">
   <img src="call_to_health_sr.png" alt="The call to the health item drop subroutine"/>
   <br>
-  There it is.
+  There it is!
 </p>
 
-Random note: the address 0x01A617 is actually offset by 0x10; so any code which wants to jump to that subroutine is actually looking for 0x01A6**0**7. And because byte order is reversed, I actually want to search for jump calls (`C4`) to `07 A6`. This pointed me to the set of code that caused so much pain over the years: 0x018CE9
+Note that address `$0x01A617` is actually offset by `#0x10`; therefore any code that jumps to that subroutine is targeting `$0x01A607`. And, because byte order is reversed, I had to search for jump calls (`C4`) to `07 A6`. This pointed me to the set of code that caused so much untold pain over the years: `$0x018CE9`
 
 <p align="center">
   <img src="bastard_sr.png" alt="The subroutine responsible for item drops"/>
@@ -212,24 +209,24 @@ Random note: the address 0x01A617 is actually offset by 0x10; so any code which 
 ### **The Item Drop System** <a id="tech_ids"></a>
 
 The item drop function reads as follows:
-* `LDA $19`: Load the contents of register 0x19 into the accumulator
-* `ASL`: shift the bits in the accumulator register to the left by one. 
+* `LDA $19`: Load the contents of address `$0x19` into the accumulator
+* `ASL`: shift the bits in the accumulator to the left by one. 
     * For example, `1001 1111` becomes `0011 1110`.
-* `BPL $8CD5`: Branch if positive; jump to address $8CD5 (which is 0x018C**E**5) if the newly shifted value in the accumulator is positive. 
+* `BPL $8CD5`: Branch if positive; jump to address `$0x8CD5` (which is `$0x018CE5`) if the newly shifted value in the accumulator is positive. 
     * That is, if the leftmost bit is `0`. In our previous example, `0011 1110` is positive, so the code would jump accordingly.
-* `JMP $A5EC`: This actually jumps to the weapon energy restoration item drop subroutine
-* `AND #$04`: Performs a bitwise AND between what's in the accumulator and the number 0x04. Effectively, this checks if the 4's bit is `1`. 
+* `JMP $A5EC`: This jumps to the weapon energy restoration item drop subroutine
+* `AND #$04`: Performs a bitwise AND between what's in the accumulator and the number `#0x04`. Effectively, this checks if the 4's bit is `1`. 
     * For example, decimal 12 AND 4 => `1100` AND `0100` => `0100`
     * decimal 8 AND 4 => `1000` AND `0100` => `0000`
 * `BEQ $8CDC`: Branch if equal. This would effectively skip the next instruction to jump to the health drop subroutine.
     * "Branch if equal" is a little misleading in this case. This is checking if the "zero flag" is set, which would occur if the previous `AND` statement resulted in the accumulator getting cleared. 
 * `JMP $A607`: Jump to the health restoration subroutine.
-* `LDA #$00`: Loads 0x00 into the accumulator (the default case if we never jump to an item sub routine)
-* `STA $19`: Stores the value of the accumulator into $19 (the register we initially loaded.)
+* `LDA #$00`: Loads `#0x00` into the accumulator (the default case if we never jump to an item sub routine)
+* `STA $19`: Stores the value of the accumulator into `$0x19` (the address we initially loaded.)
 
 A few things to point out here:
 
-In order for it to decide whether to drop an item or not, it must base it's decision on some number. In this case it reads from register 0x19, and the value at that register is used to decide whether to drop a Weapon Energy (WE) item or a Health restoration (HP) item. The value in register 0x19 was difficult to decipher. I watched register 0x19 as I played the game to see if I could deduce what effected it, and I found several things:
+In order for the game to decide whether to drop an item or not, it must base it's decision on some number. In this case it reads from address `$0x19`, and its value is used to decide whether to drop a Weapon Energy (WE) item or a Health restoration (HP) item. I watched address `$0x19` as I played the game to see if I could deduce what effected its value, and I found several things:
  * The orientation of the player (facing left/right, jumping, etc.) changed the value by slight amounts.
  * Shooting one bullet on screen would increase the value by one, but many bullets would not continue to increment it.
  * When artillery shells (an enemy which you cannot kill and destroys itself) were on screen, the value was always 3, regardless of the players orientation.
@@ -241,30 +238,31 @@ In order for it to decide whether to drop an item or not, it must base it's deci
 </p>
 
 There are two main takeaways from this: 
- 1. There are many different things which write to 0x19
- 1. The values within 0x19 are not uniform (i.e. it does not produce random numbers, but a set of possible numbers)
+ 1. There are many different things which write to `$0x19`
+ 1. The values within `$0x19` are not uniform (i.e. it does not produce random numbers, but a set of possible numbers)
 
-The 1st point means that understanding what values are written to 0x19 and *why* is very difficult, since there are so many things that are effecting it at a given time.
+The 1st point means that understanding what values are written to `$0x19` and *why* is very difficult, since there are so many things that are effecting it at a given time.
 
- The 2nd point is especially important: it means that I could not simply change the `AND #$04` line to something that would produce more drops (e.g. `AND #$07`) without breaking the game. Of the set of numbers I witnessed from 0x19, they seemed to be very particular.
+ The 2nd point is especially important: it means that I could not simply change the `AND #$04` line to something that would produce more drops (e.g. `AND #$07`) without breaking the game. Of the set of numbers I witnessed from `$0x19`, they seemed to be very particular.
 
  What's more, you may have noticed that the item drop chances are not even*. This is because the WE item drop is checked before the HP item drop, and they are comparing against different things. The conditions for these drops are as follows:
   * A: value X is negative (e.g. Left most bit is 1; `1000 0000`)
       * (`1010 0100` satisfies this condition, `0010 0100` does not)
   * B: value X has a `1` in the 4's bit (e.g. `0000 0100`)
-      * (`1001 0101` satisfies this condition, `1010 1001` deos not)
+      * (`1001 0101` satisfies this condition, `1010 1001` does not)
 
 These conditions are checked after applying a left shift (`ASL`, e.g. `0101 0101` => `1010 1010`) on the number in question (mostly irrelevant to the logic we're focusing on). For clarity, I will refer to this number as X.
 
 First, we check the negative condition: A(X). If X is negative, the `BPL` is not taken, and instead it moves on to the `JMP` instruction, jumping to the WE item drop subroutine. After the jump, the code returns elsewhere, *not* where we left off in the item drop system function. In the event that X is positive, we take the `BPL` and perform the next check: B(X). If there is a `1` in the 4's place, then we do not take the `BEQ`, instead jumping to the HP item drop subroutine.
 
-You may have noticed that there are cases where X could satisfy both conditions: there are values for X which are both negative and have a `1` in the 4's place (e.g. `1000 0100`). In that case, the game drops a WE item and moves on. Stated another way; **half** of *all possible values* of X that could produce a HP item drop would instead produce a WE item. This explains why there seem to be so many more WE drops in the game and so few HP drops.
+You may have noticed that there are cases where X could satisfy both conditions: there are values for X which are both negative and have a `1` in the 4's place (e.g. `1000 0100`). In that case, the game drops a WE item. Stated another way; **half** of *all possible values* of X that could produce a HP item drop would instead produce a WE item. This explains why there seem to be so many more WE than HP drops in the game.
 
 After analyzing this function, I decided that the easiest course of action would be to re-write the function, and bypass this logic all together.
 
 <br>
  <h5>*This technically assumes that the game is not producing values for X which are mutually exclusive, satisfying either condition A or condition B - which I highly suspect is the case</h5>
 <br>
+ 
  **tl;dr**: The existing item drop system is cryptic, and does not produce even chances of dropping Weapon Energy and Health Restoration item drops.
 
 ### **The Solution** <a id="tech_solution"></a>
@@ -274,11 +272,11 @@ The new item drop system would have the following requirements:
 * Items would only drop from enemies that would typically drop these items
     * No drops from artillery shells, mini-bosses, etc.
 
-If my Assembly skills were greater I may have attempted to write something more ambitious, like getting an item drop automatically when you destroy 5 enemies in a row without taking damage or something. But, I think random chance is sufficient enough. I wasn't sure how much I wanted to increase the drop chance, but I did want to start low. Keeping the patch as close to the game's original vision is important, and the change shouldn't be to invasive. Thus, the player shouldn't be showered with items.
+If my Assembly skills were greater I may have attempted to write something more ambitious, like getting an item drop automatically when you destroy 5 enemies in a row without taking damage or something. But, I think random chance is sufficient enough. I wasn't sure how much I wanted to increase the drop chance, but I did want to start low. Keeping the patch as close to the game's original vision is important, and the change shouldn't trivialize the challenge.
 
 I would need a few things to create this function. First, I need to know the Id (i.e. type) of the enemy which was destroyed. Second, I needed a source of randomness
 
-The type of the enemy can be determined by looking at 0x18, however this variable changes by the time the item drop system is invoked. Instead, the value has to be stored in a less volatile place in RAM. For many of the enemy types, we can continue using the "scoring" mechanism of 0x19; when the value is low (e.g. 0x03) then it means that it's a lesser enemy which normally does not drop power ups (such as an artillery shell). 
+The type of the enemy can be determined by looking at `$0x18`, however this variable changes by the time the item drop system is invoked. Instead, the value has to be stored in a less volatile place in RAM. For many of the enemy types, we can continue using the "scoring" mechanism of `$0x19`; when the value is low (e.g. 0x03) then it means that it's a lesser enemy (such as an artillery shell) which does not drop items. 
 
 As far as enemy types not covered by the 0x19 check, there's actually only one other enemy that needs to be accounted for, which is the level 1 sub-boss:
 
@@ -287,7 +285,7 @@ As far as enemy types not covered by the 0x19 check, there's actually only one o
   This bastard.
 </p>
 
-This enemy is special because they're the only enemy in the game that drops a level-ending power-up (the machine gun), and they show up again (in level 2) but don't drop anything. I assume that the mysterious 0x19 scoring mechanism makes an exclusion for this enemy type, because after defeating it for the second time on level 2, if it drops a standard HP/WE item, the sprite comes out garbled. Since this is the only enemy in the game where this can happen, we include a specific check to ensure that the destroyed enemy's Id does not equal level 1 sub-boss: `0x0F`.
+This enemy is special because they're the only enemy in the game that drops a level-ending power-up (the machine gun), and they show up again (in level 2) but don't drop anything. I assume that the mysterious `$0x19` scoring mechanism makes an exclusion for this enemy type, because after defeating it for the second time on level 2, if it drops a standard HP/WE item, the sprite looks glitched. Since this is the only enemy in the game where this can happen, we include a specific check to ensure that the destroyed enemy's Id does not equal level 1 sub-boss: `#0x0F`.
 
 As for a source of randomness, a counter could be used. A counter is a value that increments or decrements every frame:
 
@@ -303,7 +301,7 @@ Counters are general purpose and can act as a timers. For our purpose, this work
     * If the value in the accumulator is between 0x22 and 0x00, drop a HP item
     * Otherwise, do nothing
 
-The chance for dropping a WE or HP item are the same, without a number overlap like in the original item drop system. There are 0x21 numbers between 0xFF and 0xDD, as well as 0x22 and 0x00. The reason that we split them up into higher/lower bounds instead of contiguous (e.g. 0x00 <-> 0x22 HP drop, 0x23 <-> 0x44 WE Drop) is because it's a hair easier to program.
+The chance for dropping a WE or HP item are the same, unlike the original item drop system. There are `#0x21` numbers between `#0xFF` and `#0xDD`, as well as `#0x22` and `#0x00`. The reason that we split them up into higher/lower bounds instead of contiguous (e.g. `#0x00` <-> `#0x22` HP drop, `#0x23` <-> `#0x44` WE Drop) is because it's a hair easier to program.
 
 With these requirements and inputs squared away, it's time to code.
 
@@ -321,26 +319,26 @@ When you're as incapable as I am, editing Assembly can be tricky. Since jumping 
 
 The above function, which I affectionately refer to as Beef, is the new item drop system. It functions as follows:
 
-* `LDA $19`: Load the value of 0x19 into the accumulator
+* `LDA $19`: Load the value of `$0x19` into the accumulator
 * `CMP #$0F`: Compare the value of the accumulator with the number 0x0F"
 * `BCS $BEE8`: If the value in accumulator is greater than 0x0F, skip the following jump instruction.
 * `JMP $8CDC`: This jumps to the end of the function which used to be responsible for the item drop system. It essentially exits this function.
 * `LDA $0167`: This loads the current value of the counter (our sudo-random number generator) from memory into the accumulator.
-* `CMP #$DD`: Compare the value in the accumulator to the number 0xDD.
-* `BCC $BEF2`: If the value in the accumulator is less than 0xDD, skip the following jump instruction.
+* `CMP #$DD`: Compare the value in the accumulator to the number `#0xDD`.
+* `BCC $BEF2`: If the value in the accumulator is less than `#0xDD`, skip the following jump instruction.
 * `JMP $A5EC`: Jump to the WE item drop subroutine. From there, it exits this section of code.
-* `CMP #$22`: Compare the value in the accumulator to the number 0x22.
-* `BCS $BEF9`: If the value in the accumulator is greater than 0x22, skip the following jump instruction.
+* `CMP #$22`: Compare the value in the accumulator to the number `#0x22`.
+* `BCS $BEF9`: If the value in the accumulator is greater than `#0x22`, skip the following jump instruction.
 * `JMP $A607`: Jump to the HP item drop subroutine. From there, it exits this section of code.
 * `JMP $8CDC`: This jumps to the end of the function which used to be responsible for the item drop system. It essentially exits this function.
 
 This function accomplishes (most of) the requirements:
-* It checks that only enemies with a 0x19 value of 0x0F or greater are eligible for item drops.
+* It checks that only enemies with a `$0x19` value of 0x0F or greater are eligible for item drops.
 * There is a greater chance of an item getting dropped (25% likely-hood of an item getting dropped).
 * There is an equal chance of getting a WE or HP item (50% chance each).
 * It returns to the end of the original item drop system function, causing minimal interference with the rest of the code.
 
-There is only one condition that it doesn't cover; the check to see if the enemy getting destroyed is the level 1 sub-boss (Id: 0x0F). For that, I thought it best to make another function which guards entry into the Beef function. That way, if I had to append more ids (other than just the check for 0x0F) that could be done without changing (and rewriting) Beef.
+There is only one condition that it doesn't cover; the check to see if the enemy getting destroyed is the level 1 sub-boss (Id: `#0x0F`). For that, I thought it best to make another function which guards entry into the Beef function. That way, if more ids had to appended (other than just the check for `#0x0F`) that could be done without changing (and rewriting) Beef.
 
 **tl;dr**: A new item drop function was implemented in assembly to drop items more frequently and in equal amounts.
 
@@ -351,11 +349,11 @@ There is only one condition that it doesn't cover; the check to see if the enemy
   The black-list function.
 </p>
 
-This function is a black-list function (with only one thing on the list). It checks if the enemy that was destroyed is equal to 0x0F. If it is, it jumps to the end of the old item drop function. Otherwise, it calls Beef (`$BEDF`). From outside code, this is the defacto entrypoint to the new item drop system.
+This function is a black-list function (with only one thing on the list). It checks if the enemy that was destroyed is equal to `#0x0F`. If it is, it jumps to the end of the old item drop function. Otherwise, it calls Beef (`$0x01BEDF`). From outside code, this is the defacto entrypoint to the new item drop system.
 
-I wont bother walking through the code again since it's so short, but I will point out that 0x7000 is a random location in RAM which I chose to store the destroyed enemy's Id before it gets changed. 
+I wont bother walking through the code again since it's so short, but I will point out that `$0x7000` is a random location in RAM which I chose to store the destroyed enemy's Id before it gets changed. 
 
-Next, I will show off the function for writing the enemy Id to the special place (0x7000) in RAM.
+Next, I will show off the function for writing the enemy Id to the special place (`$0x7000`) in RAM.
 
 **tl;dr** The blacklist function exists to prevent item drops for certain enemies.
 <br><br>
@@ -370,12 +368,13 @@ Not a very interesting name, but it's clear enough.
   <img src="enemy_id_function.png" alt="The enemy Id storing function."/> <br>
   The code where the enemy Id storing function is called (left), and the enemy Id storing function (right).
 </div>
+<br>
 
 This code will look a bit "hacky-er", so i decided to include the where the function is getting invoked in addition to the function itself. The code on the left (referred to as the "calling function") gets called immediately after the enemy sustains a mortal blow. `0x18` stores the id of the enemy, and when the enemy gets destroyed, their Id gets changed from whatever it is to the "explosion" object (Id `0x23`). You can see this happening on the calling function when it loads `0x23` into the accumulator and stores it into `0x18` (`LDA #$23`, `STA $18`). So before that, we need to store the enemy Id somewhere in RAM.
 
 In order to store the Id somewhere in RAM, we need to figure out where to put it. Looking at the available values in RAM, I noticed that large parts of it appeared untouched - so I picked an easy to remember location (`0x7000`). But looking at the calling function, there really isn't any room to add the instructions to store it there. This required a bit of improvisation.
 
-There are some instructions assigning `0x00` to a few registers before the enemy id gets wiped out. The solution I came up with was to branch off to a separate function (the "enemy id storing" function) at the beginning of this, write `0x00` to all the fields it required, then store the enemy id (address `0x18`) into a new location `0x7000`. Once finished, it would jump back to the end of the calling function, and resume assigning `0x23` to address `0x18`. Kind of like doing a bypass around a clotted artery.
+There are some instructions assigning `0x00` to a few address before the enemy id gets wiped out. The solution I came up with was to branch off to a separate function (the "enemy id storing" function) at the beginning of this, write `0x00` to all the fields it required, then store the enemy id (address `0x18`) into a new location `0x7000`. Once finished, it would jump back to the end of the calling function, and resume assigning `0x23` to address `0x18`. Kind of like doing a bypass around a clotted artery.
 
 The result is, effectively none of the existing code is altered, and the enemy id gets stored somewhere to be used later.
 
@@ -401,7 +400,7 @@ I finally got to live out 10-year-old-me's dream job of being a video game teste
   Unlike in the game haw haw.
 </p>
 
-After implementing the new item drop system, I had to tweak it several times - mostly because the drop rate was tuned way too low. I had increased it sparingly, giving a few play tests in-between updates. Once it was set to 15%, it felt right. Suffice to say, increasing the drop rate (especially for health recovery items) decreased the difficulty of the game - however, the game is still very difficult. Before the patch, I would consistently get game over on level three every time. After the patch, I finally saw what level four looked like. However in level four, there is a sharp uptick in difficulty: there's pits, swooping enemies, swooping enemies that knock you into pits, bosses that are mostly invulnerable, bosses that knock you into pits, gamey jumping off of boxes, boxes that knock you into pits, etc. In short, in order to progress, you are going to die *a lot*.
+After implementing the new item drop system, I had to tweak it several times - mostly because the drop rate was tuned way too low. I had increased it sparingly, giving a few play tests in-between updates. Once it was set to 12.5%, it felt right. Suffice to say, increasing the drop rate (especially for health recovery items) decreased the difficulty of the game - however, the game is still very difficult. Before the patch, I would consistently get game over on level three every time. After the patch, I finally saw what level four looked like. However in level four, there is a sharp uptick in difficulty: there's pits, swooping enemies, swooping enemies that knock you into pits, bosses that are mostly invulnerable, bosses that knock you into pits, gamey jumping off of boxes, boxes that knock you into pits, etc. In short, in order to progress, you are going to die *a lot*.
 
 <p align="center">
   <img src="level5_box_murder.gif" alt="level 5 box murder"/>
