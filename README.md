@@ -3,9 +3,9 @@
   <img src="level2_action.png" alt="Level 2 Action"/>
 </p>
 
-This repo is dedicated to a patch I created for the NES game Journey To Silius. The patch revamps the system which drops health and weapon energy items, which reduces the absurd difficulty of the game. However even with this patch, the game is still very, very hard. Care was taken to ensure that nothing else in the base game was changed, and everything is tested and working.
+Journey To Silius: Fair Edition is a patch I created for the NES game Journey To Silius. The patch only does one thing, which is change the frequency and fairness of item drops (including health restoration). Care was taken to ensure that nothing else in the base game was changed, and everything is tested and working. Even with the patch, the game is still very difficult.
 
-This README contains a lot of design and technical details. This is largely for my own benefit (should I have to come back and change something), however those interested in a *fairly* simple explanation on how to modify NES games would find it useful as well. The only thing harder than Journey To Silius will be the Journey To The End Of This README.
+This README contains a lot of design and technical details. This is largely for my own benefit (should I have to come back and change something). However those interested in a *fairly* simple explanation on how to modify NES games would find it useful as well. The only thing harder than Journey To Silius will be the Journey To The End Of This README.
 
 # Table of Contents
 1. [Installation](#installation)
@@ -47,7 +47,7 @@ To install the patch, follow these steps:
 This section explains why the patch was created, including some (non-technical) design analysis.
 
 ### **Background** <a id="background"></a>
-[Journey To Silius](https://en.wikipedia.org/wiki/Journey_to_Silius) is a fantastic run-and-gun game released on the Nintendo Entertainment System in 1990. It has all the hallmarks of a classic NES game; the game-play is fast and addicting, the graphics are beautiful, and the music is renown for how kick-ass it is. The game is also very, very difficult.
+[Journey To Silius](https://en.wikipedia.org/wiki/Journey_to_Silius) is a fantastic si-fi run-and-gun game released on the Nintendo Entertainment System in 1990. It has all the hallmarks of a classic NES game; the game-play is fast and addicting, the graphics are beautiful, and the music is renown for how kick-ass it is. The game is also very, very difficult.
 
 Being hard-as-nails is a common attribute among NES games. For the majority of which, the result is playing the game for a few minutes, and giving up. However there are a few diamonds which I just keep coming back to; including Journey to Silius. I played it at a young age and would rarely get past the first level, but still, its polish left an impression on me. I *want* to get further, I *want* to beat it - yet despite how wonderful the game is, it suffers from a few flaws that make it unreasonably hard.
 
