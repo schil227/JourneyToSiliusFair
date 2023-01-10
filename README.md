@@ -3,7 +3,7 @@
   <img src="level2_action.png" alt="Level 2 Action"/>
 </p>
 
-Journey To Silius: Fair Edition is a patch I created for the NES game Journey To Silius. The patch only does one thing, which is change the frequency and fairness of item drops (including health restoration). Care was taken to ensure that nothing else in the base game was changed, and everything is tested and working. Even with the patch, the game is still very difficult.
+Journey To Silius: Fair Edition is a patch I created for the NES game Journey To Silius. The patch only does one thing: it changes the frequency and fairness of item drops (including health restoration). Care was taken to ensure that nothing else in the base game was altered, and everything is tested and working. Even with the patch, the game is still very difficult.
 
 This README contains a lot of design and technical details. This is largely for my own benefit (should I have to come back and change something). However those interested in a *fairly* simple explanation on how to modify NES games would find it useful as well. The only thing harder than Journey To Silius will be the Journey To The End Of This README.
 
@@ -13,7 +13,7 @@ This README contains a lot of design and technical details. This is largely for 
     1. [Background](#background)
     1. [On "Fixing" the game](#fixing)
     1. [Why It's So Hard](#problem)
-    1. [The Solution](#design_solution)
+    1. [How To Fix The Frustration](#design_solution)
     1. [The Item Drop System](#old_ids)
     1. [The Result](#design_result)
 1. [How It Was Changed](#how)
@@ -47,11 +47,11 @@ To install the patch, follow these steps:
 This section explains why the patch was created, including some (non-technical) design analysis.
 
 ### **Background** <a id="background"></a>
-[Journey To Silius](https://en.wikipedia.org/wiki/Journey_to_Silius) is a fantastic si-fi run-and-gun game released on the Nintendo Entertainment System in 1990. It has all the hallmarks of a classic NES game; the game-play is fast and addicting, the graphics are beautiful, and the music is renown for how kick-ass it is. The game is also very, very difficult.
+[Journey To Silius](https://en.wikipedia.org/wiki/Journey_to_Silius) is a fantastic si-fi run-and-gun game released on the Nintendo Entertainment System in 1990. It has all the hallmarks of a classic NES game: the game-play is fast and addicting, the graphics are beautiful, and the music is renown for how kick-ass it is. The game is also very, very difficult.
 
-Being hard-as-nails is a common attribute among NES games. For the majority of which, the result is playing the game for a few minutes, and giving up. However there are a few diamonds which I just keep coming back to; including Journey to Silius. I played it at a young age and would rarely get past the first level, but still, its polish left an impression on me. I *want* to get further, I *want* to beat it - yet despite how wonderful the game is, it suffers from a few flaws that make it unreasonably hard.
+Being hard-as-nails is a common attribute among NES games. Most of these have the same outcome: the player plays it for a few minutes, and gives up.  However there are a few diamonds which I just keep coming back to; including Journey to Silius. I played it at a young age and would rarely get past the first level, but still, its polish left an impression on me. I *want* to get further, I *want* to beat it - yet despite how wonderful the game is, it suffers from a few flaws that make it unreasonably hard.
 
-Having grown from a small boy into a big man child, I've happened to gain some skills which I can use to remedy this. I have taken it upon myself to improve the game, with the goal of making it a little more fair.
+Having grown from a small boy into a big man child, I've happened to gain some skills which I can use to remedy this. I have taken it upon myself to improve the game, with the goal of making it just a little more fair.
 
 **tl;dr**: It is an awesome game which is incredibly difficult.
 
@@ -76,9 +76,9 @@ There's two things which, when mixed, make the game very, very hard.
     
 </p>
 
-The first thing: Limited Continues. The mechanics of the game dictate that you have three lives and three continues, giving you 12 chances to beat the game before you're booted all the way back to the start menu. There are five levels in the game. There are (thankfully) checkpoints within the areas, however if you lose your last life and continue, you must start the area over again. Ghosts 'n Goblins (NES) - another hard-as-nails game - looks generous by comparison. It has unlimited continues and always starts you from your checkpoint, and is an order of magnitude easier as a result.
+The first thing: Limited Continues. The mechanics of the game dictate that you have three lives and three continues, giving you 12 chances to beat the game before you're booted all the way back to the start menu. There are five levels in the game. There are (thankfully) checkpoints within the areas, however if you lose your last life and continue, you must start the level over again. Ghosts 'n Goblins (NES) - another hard-as-nails game - looks generous by comparison. It has unlimited continues and always starts you from your checkpoint, and is an order of magnitude easier as a result.
 
-Limited continues means you will be replaying the beginning of the game over and over, ever facing the existential threat of losing all your progress. You may have a good run, but if you drop the ball then the experience is quick to sour. On the other hand, it gives real stakes to the game - something which is all but abandoned now-a-days.
+Limited continues means you will be replaying the beginning of the game over and over, ever facing the existential threat of losing all your progress. You may have a good run, but if you drop the ball, the experience is quick to sour. On the other hand, it gives real stakes to the game - something which is all but abandoned now-a-days. It gives a harshness which I crave from a NES game.
 
 <p align="center">
   <img src="item_drops.png" alt="The items: health restoration on the left, energy weapon restoration on the right."/></br>
@@ -96,18 +96,18 @@ The result is frustration. if you have limited continues and *very* rare health 
 
 
 <p align="center">
-  <img src="level3_jerk.gif" alt="Level 4 knockback."/>
+  <img src="level3_jerk.gif" alt="Level 3 jerk."/>
   <br>
   yep.
 </p>
 
-Putting these two problems together, you see the bigger problem. Limited continues and rare health drops means you have to play perfectly from start to finish. You'll also need to have encyclopedic knowledge of the levels to do so, requiring you to play perfect many times just to learn what will kill you in the next level. The end result? Most players, including myself, give up.
+Putting these two facets together, you see the bigger problem. Limited continues and rare health drops means you have to play perfectly from start to finish. You'll also need to have encyclopedic knowledge of the levels to do so, requiring you to play perfect many times just to learn what will kill you in the next level. The end result? The vast majority of players, including myself, give up. If you want to beat the game in this form, it requires a commitment that lasts way longer than after all the fun has stopped. If you had beaten the game in this form, kudos to you - but I'm sure that you will hold scorn for the game in your heart.
 
 **tl;dr**: Limited continues and very scarce health drops compound to make completing the game a Herculean task.
 
-### **The Solution** <a id="design_solution"></a>
+### **How To Fix The Frustration** <a id="design_solution"></a>
 
-The art of creating a patch to improve a game requires striking a balance between giving the player more power, but also keeping the original vision of the game in check. Giving the player too much power which trivializes the challenge of the game also trivializes the reward of beating it. Not enough, and we get the same outcome; players dropping the game after giving it a reasonable shot.
+The art of creating a patch to improve a game requires striking a balance between giving the player more power, but also keeping the original vision of the game. Giving the player too much power would trivialize the challenge of the game, and therefore also trivialize the reward of beating it. Not enough power, and we get the same outcome; players dropping the game after giving it a reasonable shot.
 
 Increasing the drop of health restoration items seems like the best solution. The game already drops health restoration for the player, so there is a system in place to help the player along, however it remains woefully ineffective. By tweaking this, players can be given a lot more grace for all the challenges which lie ahead. It's like Super Mario Bros. - getting that power up at the half-way point of the level makes all the difference in the world. 
 
