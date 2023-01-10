@@ -1,18 +1,18 @@
 # Journey To Silius: Fair Edition
 <p align="center">
-  <img src="level2_action.png" alt="End or Continue"/>
+  <img src="level2_action.png" alt="Level 2 Action"/>
 </p>
 
-This repo is dedicated to a patch I created for the NES game Journey To Silius which makes the game (more) fair. This is done by revamping the system responsible for dropping health and weapon energy restoration items, in favor of a flat 15% chance an item drop. Even with this patch, the game is still very, very hard - however, it is beatable.
+This repo is dedicated to a patch I created for the NES game Journey To Silius. The patch revamps the system which drops health and weapon energy items, which reduces the absurd difficulty of the game. However even with this patch, the game is still very, very hard. Care was taken to ensure that nothing else in the base game was changed, and everything is tested and working.
 
-This README contains a lot of details, both technical and on design. This is largely for my own benefit should I have to come back and change something, however those interested in a *fairly* simple explanation on how to modify NES games would find it useful as well. The only thing harder than Journey To Silius will be the Journey To The End Of This README.
+This README contains a lot of design and technical details. This is largely for my own benefit (should I have to come back and change something), however those interested in a *fairly* simple explanation on how to modify NES games would find it useful as well. The only thing harder than Journey To Silius will be the Journey To The End Of This README.
 
 # Table of Contents
 1. [Installation](#installation)
 1. [Why The Patch Was Created](#why)
     1. [Background](#background)
     1. [On "Fixing" the game](#fixing)
-    1. [The Problem](#problem)
+    1. [Why It's So Hard](#problem)
     1. [The Solution](#design_solution)
     1. [The Item Drop System](#old_ids)
     1. [The Result](#design_result)
@@ -68,7 +68,7 @@ This patch does not intend to cheapen the experience; in fact it aims to keep th
 
 **tl;dr**: This patch aims to make the game beatable, while respecting the original vision.
 
-### **The Source of the Difficulty** <a id="problem"></a>
+### **Why It's So Hard** <a id="problem"></a>
 There's two things which, when mixed, make the game very, very hard.
 
 <p align="center">
