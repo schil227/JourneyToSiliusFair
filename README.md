@@ -34,7 +34,7 @@ This README contains a lot of details, both technical and on design. This is lar
 ## **Installation**  <a id="installation"></a>
 To install the patch, follow these steps:
 * Have a copy of the Journey To Silius .NES file (*These steps will override the existing file, so make sure to copy the original if you wish to have a vanilla version of the ROM*)
-* Download the patch `JourneyToSilius_Fair.ips` from this repository.
+* Download the patch `JourneyToSilius_Fair.ips` from this repository [(link)](https://github.com/schil227/JourneyToSiliusFair/blob/main/JourneyToSilius_Fair.ips).
 * Download [Lunar IPS](https://www.romhacking.net/utilities/240/), a program which can be used to apply the patch
 * Run Lunar IPS
     * Select "Apply IPS Patch"
@@ -68,8 +68,8 @@ This patch does not intend to cheapen the experience; in fact it aims to keep th
 
 **tl;dr**: This patch aims to make the game beatable, while respecting the original vision.
 
-### **The Problem** <a id="problem"></a>
-Well, there's two.
+### **The Source of the Difficulty** <a id="problem"></a>
+There's two things which, when mixed, make the game very, very hard.
 
 <p align="center">
   <img src="continue.png" alt="End or Continue"/></br>
@@ -417,7 +417,7 @@ Suffice to say, increasing the drop rate (especially for health recovery items) 
 <p align="center">
   <img src="level5_box_murder.gif" alt="level 5 box murder"/>
   <br><br>
-  Wasn't joking.
+  See?
 </p>
 
 This is where I see the real value of adding more health drops shines: the player is able to gain the encyclopedic knowledge required to pass a level without the very tedious threat of starting over from level one. You have more chances to learn how to jump from falling blocks, the attack patterns of bosses, what weapons work best for tough spots in the levels. Ultimately, it's a way to mitigate the burnout that causes so many people to give up on tough games.
