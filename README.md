@@ -370,13 +370,13 @@ Not a very interesting name, but it's clear enough.
 </div>
 <br>
 
-This code will look a bit "hacky-er", so i decided to include the where the function is getting invoked in addition to the function itself. The code on the left (referred to as the "calling function") gets called immediately after the enemy sustains a mortal blow. `0x18` stores the id of the enemy, and when the enemy gets destroyed, their Id gets changed from whatever it is to the "explosion" object (Id `0x23`). You can see this happening on the calling function when it loads `0x23` into the accumulator and stores it into `0x18` (`LDA #$23`, `STA $18`). So before that, we need to store the enemy Id somewhere in RAM.
+This code is a bit "hacky-er", so i decided to include the where the function is getting called in addition to the function itself. The code on the left (referred to as the "calling function") gets called immediately after the enemy sustains a mortal blow. `$0x18` contains the id of the enemy, and when the enemy gets destroyed, their id gets changed to the "explosion" object (Id `#0x23`). You can see this happening on the calling function when it loads `#0x23` into the accumulator and stores it into `$0x18` (`LDA #$23`, `STA $18`). So before that happens, the enemy Id must be somewhere in RAM.
 
-In order to store the Id somewhere in RAM, we need to figure out where to put it. Looking at the available values in RAM, I noticed that large parts of it appeared untouched - so I picked an easy to remember location (`0x7000`). But looking at the calling function, there really isn't any room to add the instructions to store it there. This required a bit of improvisation.
+In order to store the id in RAM, we need to figure out where to put it. Looking at the available addresses in RAM, I noticed that large parts of it appeared untouched - so I picked an easy to remember location (`$0x7000`). But looking at the calling function, there really isn't any room to add the instructions to store the id there. This required a bit of improvisation.
 
-There are some instructions assigning `0x00` to a few address before the enemy id gets wiped out. The solution I came up with was to branch off to a separate function (the "enemy id storing" function) at the beginning of this, write `0x00` to all the fields it required, then store the enemy id (address `0x18`) into a new location `0x7000`. Once finished, it would jump back to the end of the calling function, and resume assigning `0x23` to address `0x18`. Kind of like doing a bypass around a clotted artery.
+There are some instructions assigning value `#0x00` to a few address before the enemy id gets wiped out. The solution I came up with was to branch off to a separate function (the "enemy id storing" function) at the beginning of this, write `#0x00` to all the fields it required, then store the enemy id (address `$0x18`) into a new location `$0x7000`. Once finished, it would jump back to the end of the calling function, and resume assigning `#0x23` to address `$0x18`. It's kind of like doing a bypass around a clotted artery.
 
-The result is, effectively none of the existing code is altered, and the enemy id gets stored somewhere to be used later.
+As a result, the enemy id gets stored in RAM, and all the previously existing instructions are accounted for.
 
 **tl;dr**: The enemy id is stored without upsetting the existing code.
 
@@ -388,7 +388,7 @@ Much like at a restaurant, the burger doesn't get made unless you order it.
   Like a dollar menu after inflation.
 </p>
 
-So this was the old item drop system function, which has now been augmented to call into our new item drop system function. It doesn't call into Beef directly, mind, but the guardian blacklist function first. The entry point being the `JMP` instruction at address `0x018CDD` (`JMP $BE90`). Once the blacklist/Beef functions finish, they either jump back to `0x18CEC` (in the event no item is dropped) or they return to the function on the stack (as dictated by the `RTS` command). The middle instructions (between `0x018CE0` -> `0x018CE9`) are all ignored in favor of the new item drop system. The result is the seamless integration of some fancy new functions which do not alter anything in the base game, except the item drops.
+Above is the old item drop system function which has been augmented to call into our new item drop system function. It doesn't call into Beef directly, mind, but the guardian blacklist function first. The entry point is the `JMP` instruction at address `$0x018CDD` (`JMP $BE90`). Once the blacklist/Beef functions finish, they either jump back to `$0x18CEC` (in the event no item is dropped) or they return to the function on the stack (as dictated by the `RTS` command at the end of the HP/WE item drop sub routines). The middle instructions (between `$0x018CE0` -> `$0x018CE9`) are all ignored in favor of the new item drop system. The result is the seamless integration of the new item drop functions.
 
 **tl;dr**: The new code is invoked instead of the existing item drop system, and all other existing behavior is intact.
 
@@ -400,7 +400,9 @@ I finally got to live out 10-year-old-me's dream job of being a video game teste
   Unlike in the game haw haw.
 </p>
 
-After implementing the new item drop system, I had to tweak it several times - mostly because the drop rate was tuned way too low. I had increased it sparingly, giving a few play tests in-between updates. Once it was set to 12.5%, it felt right. Suffice to say, increasing the drop rate (especially for health recovery items) decreased the difficulty of the game - however, the game is still very difficult. Before the patch, I would consistently get game over on level three every time. After the patch, I finally saw what level four looked like. However in level four, there is a sharp uptick in difficulty: there's pits, swooping enemies, swooping enemies that knock you into pits, bosses that are mostly invulnerable, bosses that knock you into pits, gamey jumping off of boxes, boxes that knock you into pits, etc. In short, in order to progress, you are going to die *a lot*.
+After implementing the new item drop system, I had to tweak it several times - mostly because the drop rate was tuned way too low. I had increased it sparingly, giving a few play tests in-between updates. Once it was set to 12.5%, it felt right. Suffice to say, increasing the drop rate (especially for health recovery items) decreased the difficulty of the game - however, the game is still very difficult. The added HP will only get you so far; with sub/main bosses you're completely on your own, and health is almost irrelevant on the level 5 meat grinder. To beat the game, it comes down to the skill and knowledge which must be obtained from playing it over and over.
+
+ Before the patch, I would consistently get game over on level three every time. After the patch, I finally saw what level four looked like. However in level four, there is a sharp uptick in difficulty: there's pits, swooping enemies, swooping enemies that knock you into pits, bosses that are mostly invulnerable, bosses that knock you into pits, gamey jumping off of boxes, boxes that knock you into pits, etc. In order to progress, you are going to die *a lot*.
 
 <p align="center">
   <img src="level5_box_murder.gif" alt="level 5 box murder"/>
@@ -408,7 +410,7 @@ After implementing the new item drop system, I had to tweak it several times - m
   See?
 </p>
 
-This is where I see the real value of adding more health drops shines: the player is able to gain the encyclopedic knowledge required to pass a level without the very tedious threat of starting over from level one. You have more chances to learn how to jump from falling blocks, the attack patterns of bosses, what weapons work best for tough spots in the levels. Ultimately, it's a way to mitigate the burnout that causes so many people to give up on tough games.
+This is where I see the real value of adding more health drops: the player is able to gain the encyclopedic knowledge required to pass a level without constantly starting over from level one. You have more chances to learn how to jump from falling blocks, the attack patterns of bosses, what weapons work best for tough spots in the levels. Ultimately, it's a way to reduce the burnout that so often causes players to give up on a tough game.
 
 <p align="center">
   <img src="level4_spike_trap.gif" alt="Level 4 spike trap."/>
@@ -416,9 +418,9 @@ This is where I see the real value of adding more health drops shines: the playe
   Just think, you could've used up your last continue to learn about this!
 </p>
 
-After several attempts, I was clearly becoming better at the game. I knew what enemies were coming up and how to dispatch them. How best to fight the sub and main bosses. How to navigate the dastardly side-scrolling level five. And, I'm pleased to announce that on my final continue and last life, *by the skin of my teeth*, I was able to beat the final boss.
+After several attempts, I was clearly becoming better at the game. I knew what enemies were coming up and how to dispatch them. I knew how best to fight the sub and main bosses. How to navigate the dastardly side-scrolling level five. I'm pleased to announce that on my final continue and last life, *by the skin of my teeth*, I was able to beat the final boss.
 
-**tl;dr** After significant consternation, I beat Journey to Silius.
+**tl;dr** After significant consternation, I beat Journey to Silius thanks to this patch.
 
 ## **Conclusion** <a id="conclusion"></a>
 
@@ -432,13 +434,17 @@ Before this exercise, I may have said 'yes' - however after completing the game 
 
 In the decades since the NES, the video game industry has clearly toned down the difficulty of the average video game. Outside of a few niche titles there are no limited continues, and even the concept of lives has been fading. The stakes in modern games are so low, and the punishment so light for failing, that even some of the most difficult titles of today struggle to stand against the legendary difficulty of the NES-era. 
 
-I'd like to think there is a balance to be struck, and this patch accomplishes it. The added health drops only get you so far; with bosses you're completely on your own, and health is almost irrelevant on the level 5 meat grinder. To beat the game, it comes down to skill and knowledge - things which you are barred from by a wall of tedium. 
+The key is frustration. With so many of these tough-as-nails NES titles (Ghosts'n'Goblins, Adventure Island, Fantastic Adventure of Dizzy, Castlevania III, etc.) we have all the things that make up a classic NES game (gameplay, sound, graphics, sense of adventure etc.). Yet none of these titles are as revered as say, Super Mario Bros. 3 or Metroid. The reason is that all the fun that these games are saturated in frustration. 
 
-What gives me the most assurance was how I felt as I was fighting the final boss. My heart was racing and I was focusing on my breathing. I only had one life left, and I had to pause the game and think of a strategy because *this was it*. After the final blow, the yummy wave of dopamine came and I felt like I had actually accomplished something. *This* was NES hard.
+Frustration is the antithesis of fun. Frustration is what stopped me from grinding out Journey to Silius after all these years. As I said, if someone beat Journey to Silius (without the patch), I can't imagine they would have much love for the title because the fun had warn off long before the frustration. To me, this is what makes the patch so valuable: it pulls Journey to Silius up out of the bog of frustration and lets its good qualities shine through. It gives it a spot among some of the greatest NES titles... *and it was so easy to do!* I lament that it was not incorporated in the original design, but never the less I'm glad I got to experience it in this way.
+
+Still; was the game cheapened? What gives me the most assurance was how I felt as I was fighting the final boss. My heart was racing and I was focusing on my breathing. I only had one life left, and I had to pause the game and think of a strategy because *this was it*. After the final blow, the yummy wave of dopamine came and I felt like I had actually accomplished something. *This* was NES hard.
 
 I am aware that this is a consensus of one, so I welcome the community to test out this patch and share their opinions, especially if this is a game you shelved because of its difficulty.
 
 ## Acknowledgements <a id="acknowledgements"></a>
 First, I'd like to thank the [Displaced Gamers](https://www.youtube.com/@DisplacedGamers) Youtube channel, which gave me the inspiration in the first place. They make a ton of good stuff regarding the coding of older games, including exploring bugs and the like. I would recommend their video on [Super Mario Bros. 2](https://youtu.be/y33rn-I-mIs)
 
-Second, I'd like to thank you for reading this, and hopefully enjoying the patch.
+Second, my Princess Toadstool Jill and our two Goombas, Desmond and Felix.
+
+Third, I'd like to thank you for reading this, and hopefully enjoying the patch.
