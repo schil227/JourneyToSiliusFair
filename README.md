@@ -1,6 +1,6 @@
 # Journey To Silius: Fair Edition
 <p align="center">
-  <img src="level2_action.png" alt="Level 2 Action"/>
+  <img src="images/level2_action.png" alt="Level 2 Action"/>
 </p>
 
 Journey To Silius: Fair Edition is a patch I created for the NES game Journey To Silius. The patch only does one thing: it changes the frequency and fairness of item drops (including health restoration). Care was taken to ensure that nothing else in the base game was altered, and everything is tested and working. Even with the patch, the game is still very difficult.
@@ -58,7 +58,7 @@ Having grown from a small boy into a big man child, I've happened to gain some s
 I realize this may come across as saying that there's something wrong with the game, or that "bad game design" is afoot. I do not wish to imply either. Journey to Silius is a great game that had a lot of love and hard work poured into it, and was made with what was, at the time, state-of-the-art game design. 
 
 <p align="center">
-  <img src="level4_knock_back.gif" alt="Level 4 knockback."/>
+  <img src="images/level4_knock_back.gif" alt="Level 4 knockback."/>
   <br>
   "State-of-the-Art"
 </p>
@@ -71,7 +71,7 @@ This patch does not intend to cheapen the experience; in fact it aims to keep th
 There's two things which, when mixed, make the game very, very hard.
 
 <p align="center">
-  <img src="continue.png" alt="End or Continue"/></br>
+  <img src="images/continue.png" alt="End or Continue"/></br>
     
 </p>
 
@@ -80,14 +80,14 @@ The first thing: Limited Continues. The mechanics of the game dictate that you h
 Limited continues means you will be replaying the beginning of the game over and over, ever facing the existential threat of losing all your progress. You may have a good run, but if you drop the ball, the experience is quick to sour. On the other hand, it gives real stakes to the game - something which is all but abandoned now-a-days. It gives a harshness which I crave from a NES game.
 
 <p align="center">
-  <img src="item_drops.png" alt="The items: health restoration on the left, energy weapon restoration on the right."/></br>
+  <img src="images/item_drops.png" alt="The items: health restoration on the left, energy weapon restoration on the right."/></br>
     Here's something you'll never see in the base game.
 </p>
 
 The other thing: restoration items are exceedingly rare. You are absolutely anemic for HP; there is little room for forgiveness in a game which throws so much at you. There are a few cases where it is *nearly impossible* to avoid getting hit (certain spots in level 2 and level 4 come to mind), and having to tank a hit comes at a high price.
 
 <p align="center">
-    <img src="dodge_this.gif"></br>
+    <img src="images/dodge_this.gif"></br>
     Uh huh.
 </p>
 
@@ -95,7 +95,7 @@ The result is frustration. if you have limited continues and *very* rare health 
 
 
 <p align="center">
-  <img src="level3_jerk.gif" alt="Level 3 jerk."/>
+  <img src="images/level3_jerk.gif" alt="Level 3 jerk."/>
   <br>
   yep.
 </p>
@@ -156,7 +156,7 @@ Fair warning, this section is mostly just a retelling of my notes in a not terri
 As mentioned, most of the time developing this patch was spent figuring out where the code was that I wanted to modify, and how to integrate my desired change. This involved a lot of sleuthing in the code and ram.
 
 <p align="center">
-  <img src="debugging.gif" alt="This is pretty much what my screen looked like the entire time"/>
+  <img src="images/debugging.gif" alt="This is pretty much what my screen looked like the entire time"/>
   <br><br>
   This is pretty much what my screen looked like the entire time.
 </p>
@@ -178,7 +178,7 @@ The next step was to set a breakpoint which basically said "If something attempt
 So, the next step was more or less the same as the previous; except instead of looking for writes to `$0x0408`, I was looking for writes to `$0x18` with values of `#0x54`. This time, I struck gold:
 
 <p align="center">
-  <img src="health_drop_subroutine.png" alt="The health drop subroutine"/>
+  <img src="images/health_drop_subroutine.png" alt="The health drop subroutine"/>
 </p>
 
 This is the health drop subroutine. To decipher the first two lines:
@@ -190,7 +190,7 @@ This is the health drop subroutine. To decipher the first two lines:
 This is great, but it's also not *exactly* what I was looking for. I wanted the function which was calling this, because it is presumably in charge of deciding when a health restoration item was dropped. This part had me stumped for a while, as I was unable to search the assembly code within FCEUX (either because I'm inept or the feature just doesn't exist). But after doing some reading up on assembly, I was able to search the raw hex file for where it was being called.
 
 <p align="center">
-  <img src="call_to_health_sr.png" alt="The call to the health item drop subroutine"/>
+  <img src="images/call_to_health_sr.png" alt="The call to the health item drop subroutine"/>
   <br>
   There it is!
 </p>
@@ -198,7 +198,7 @@ This is great, but it's also not *exactly* what I was looking for. I wanted the 
 Note that address `$0x01A617` is actually offset by `#0x10`; therefore any code that jumps to that subroutine is targeting `$0x01A607`. And, because byte order is reversed, I had to search for jump calls (`C4`) to `07 A6`. This pointed me to the set of code that caused so much untold pain over the years: `$0x018CE9`
 
 <p align="center">
-  <img src="bastard_sr.png" alt="The subroutine responsible for item drops"/>
+  <img src="images/bastard_sr.png" alt="The subroutine responsible for item drops"/>
   <br>
   How horrible.
 </p>
@@ -234,7 +234,7 @@ In order for the game to decide whether to drop an item or not, it must base it'
  * Occasionally, the value would jump sporadically - I only noticed this when there were multiple enemies on screen
 
 <p align="center">
-  <img src="mysterious_0x19.gif" alt="The health drop subroutine"/>
+  <img src="images/mysterious_0x19.gif" alt="The health drop subroutine"/>
 </p>
 
 There are two main takeaways from this: 
@@ -281,7 +281,7 @@ The type of the enemy can be determined by looking at `$0x18`, however this vari
 As far as enemy types not covered by the 0x19 check, there's actually only one other enemy that needs to be accounted for, which is the level 1 sub-boss:
 
  <p align="center">
-  <img src="sub_boss1.gif" alt="Level 1 sub-boss."/> <br>
+  <img src="images/sub_boss1.gif" alt="Level 1 sub-boss."/> <br>
   This bastard.
 </p>
 
@@ -290,7 +290,7 @@ This enemy is special because they're the only enemy in the game that drops a le
 As for a source of randomness, a counter could be used. A counter is a value that increments or decrements every frame:
 
  <p align="center">
-  <img src="counter.gif" alt="A counter in RAM." width="100"/> <br>
+  <img src="images/counter.gif" alt="A counter in RAM." width="100"/> <br>
   This counter counts down from 0xFF to 0x00, then resets to 0xFF (slowed down to 50% speed)
 </p>
 
@@ -313,7 +313,7 @@ With these requirements and inputs squared away, it's time to code.
 When you're as incapable as I am, editing Assembly can be tricky. Since jumping from one line to another is done very specifically using addresses, you can't just make a few newlines and start writing a function as you would in a higher level programming language. Instead you must find greener pastures to raise your cattle. I was fortunate to find such lush green fields:
 
 <p align="center">
-  <img src="beef.png" alt="The new item drop function."/> <br>
+  <img src="images/beef.png" alt="The new item drop function."/> <br>
   We're having steak tonight, mee maw.
 </p>
 
@@ -345,7 +345,7 @@ There is only one condition that it doesn't cover; the check to see if the enemy
 ### **The Blacklist Function** <a id="blacklist"></a>
 
  <p align="center">
-  <img src="guard_clause.png" alt="The guard clause function."/> <br>
+  <img src="images/guard_clause.png" alt="The guard clause function."/> <br>
   The black-list function.
 </p>
 
@@ -363,9 +363,9 @@ Not a very interesting name, but it's clear enough.
 
  <div align="center">
  
-  <img src="store_id_call.png" alt="The code which calls the enemy Id storing function."/> 
+  <img src="images/store_id_call.png" alt="The code which calls the enemy Id storing function."/> 
   <span style="display: inline-block; width: 32px;"></span>
-  <img src="enemy_id_function.png" alt="The enemy Id storing function."/> <br>
+  <img src="images/enemy_id_function.png" alt="The enemy Id storing function."/> <br>
   The code where the enemy Id storing function is called (left), and the enemy Id storing function (right).
 </div>
 <br>
@@ -384,7 +384,7 @@ As a result, the enemy id gets stored in RAM, and all the previously existing in
 Much like at a restaurant, the burger doesn't get made unless you order it. 
 
  <p align="center">
-  <img src="updated_bastard_sr.png" alt="Calling the Beef function."/> <br>
+  <img src="images/updated_bastard_sr.png" alt="Calling the Beef function."/> <br>
   Like a dollar menu after inflation.
 </p>
 
@@ -396,7 +396,7 @@ Above is the old item drop system function which has been augmented to call into
 I finally got to live out 10-year-old-me's dream job of being a video game tester, and boy did I dodge a bullet.
 
  <p align="center">
-  <img src="got_shot.png" alt="Calling the Beef function."/> <br>
+  <img src="images/got_shot.png" alt="Calling the Beef function."/> <br>
   Unlike in the game haw haw.
 </p>
 
@@ -405,7 +405,7 @@ After implementing the new item drop system, I had to tweak it several times - m
  Before the patch, I would consistently get game over on level three every time. After the patch, I finally saw what level four looked like. However in level four, there is a sharp uptick in difficulty: there's pits, swooping enemies, swooping enemies that knock you into pits, bosses that are mostly invulnerable, bosses that knock you into pits, gamey jumping off of boxes, boxes that knock you into pits, etc. In order to progress, you are going to die *a lot*.
 
 <p align="center">
-  <img src="level5_box_murder.gif" alt="level 5 box murder"/>
+  <img src="images/level5_box_murder.gif" alt="level 5 box murder"/>
   <br><br>
   See?
 </p>
@@ -413,7 +413,7 @@ After implementing the new item drop system, I had to tweak it several times - m
 This is where I see the real value of adding more health drops: the player is able to gain the encyclopedic knowledge required to pass a level without constantly starting over from level one. You have more chances to learn how to jump from falling blocks, the attack patterns of bosses, what weapons work best for tough spots in the levels. Ultimately, it's a way to reduce the burnout that so often causes players to give up on a tough game.
 
 <p align="center">
-  <img src="level4_spike_trap.gif" alt="Level 4 spike trap."/>
+  <img src="images/level4_spike_trap.gif" alt="Level 4 spike trap."/>
   <br><br>
   Just think, you could've used up your last continue to learn about this!
 </p>
@@ -425,7 +425,7 @@ After several attempts, I was clearly becoming better at the game. I knew what e
 ## **Conclusion** <a id="conclusion"></a>
 
 <p align="center">
-  <img src="endscreen.png" alt="endscreen"/>
+  <img src="images/endscreen.png" alt="endscreen"/>
 </p>
 
 One must ask the objective question: is the experience of beating Journey to Silius cheapened because of this patch, which technically made the game easier?
